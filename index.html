@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Aurora</title>
+<meta name="description" content="Aurora — a single-page WebGL silk-wordmark demo.">
+<meta name="theme-color" content="#04070a">
+<meta property="og:title" content="Aurora">
+<meta property="og:description" content="A single-page WebGL silk-wordmark demo.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2304070a'/%3E%3Ctext x='32' y='46' font-family='Georgia,serif' font-size='42' fill='%23dff3ee' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04070a;
+    --ink: #e6f3ef;
+    --muted: #6a8a86;
+    --hairline: #15211f;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  ::selection { background: var(--ink); color: var(--bg); }
+  html { height: 100%; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font-family: 'Inter', sans-serif; font-weight: 300;
+    display: flex; flex-direction: column;
+    min-height: 100vh; min-height: 100svh;
+    overflow-x: hidden;
+  }
+
+  #gl {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    display: block; z-index: 0;
+  }
+
+  main {
+    position: relative; z-index: 1;
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 24px;
+  }
+
+  .first {
+    font-family: 'Fraunces', serif; font-style: italic; font-weight: 340;
+    font-size: clamp(16px, 2vw, 21px); color: var(--muted);
+    letter-spacing: 0.08em;
+    opacity: 0; animation: rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s forwards;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: clamp(56px, 17vw, 180px); line-height: 1;
+    letter-spacing: 0.02em; margin-top: 6px;
+    display: flex;
+    opacity: 0; animation: rise 1.1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.35s forwards;
+  }
+  h1 .ch {
+    display: inline-block;
+    font-variation-settings: "wght" 400, "opsz" 144;
+    will-change: font-variation-settings;
+  }
+
+  .line {
+    margin-top: 34px;
+    font-size: clamp(11px, 1.3vw, 13px); color: var(--muted);
+    letter-spacing: 0.28em; text-transform: uppercase;
+    opacity: 0; animation: rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.55s forwards;
+  }
+  .line .dot { margin: 0 14px; opacity: 0.4; }
+
+  nav {
+    margin-top: clamp(48px, 9vh, 90px);
+    display: flex; gap: clamp(36px, 6vw, 72px);
+    opacity: 0; animation: rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.75s forwards;
+  }
+  nav a {
+    position: relative; text-decoration: none; color: var(--ink);
+    font-size: clamp(14px, 1.6vw, 17px); letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 6px 2px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    transition: color 0.35s ease, letter-spacing 0.35s ease;
+  }
+  nav a::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+    background: var(--ink); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.45s cubic-bezier(0.77, 0, 0.18, 1);
+  }
+  nav a:hover { letter-spacing: 0.26em; }
+  nav a:hover::after { transform: scaleX(1); }
+  nav a:focus-visible { outline: 1px solid var(--muted); outline-offset: 6px; }
+
+  footer {
+    position: relative; z-index: 1;
+    padding: 26px 32px max(26px, env(safe-area-inset-bottom));
+    border-top: 1px solid var(--hairline);
+    display: flex; justify-content: space-between;
+    font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; color: var(--muted);
+    opacity: 0; animation: fade 1.2s ease 1.1s forwards;
+  }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+  @keyframes fade { to { opacity: 1; } }
+
+  @media (max-width: 520px) {
+    main { padding: 48px 18px; }
+    .first { font-size: 18px; }
+    .line { letter-spacing: 0.2em; line-height: 2; margin-top: 26px; }
+    .line .dot { margin: 0 10px; }
+    nav {
+      flex-direction: column; gap: 0;
+      width: min(340px, 88vw); margin-top: 44px;
+    }
+    nav a {
+      display: flex; align-items: center;
+      padding: 17px 6px;
+      border-bottom: 1px solid var(--hairline);
+      font-size: 15px;
+    }
+    nav a:first-child { border-top: 1px solid var(--hairline); }
+    nav a::before {
+      content: "⟶"; position: absolute; right: 6px;
+      font-family: 'Fraunces', serif; font-size: 19px; color: var(--muted);
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.25, 1.2), color 0.3s ease;
+    }
+    nav a:active { color: var(--muted); }
+    nav a:active::before { transform: translateX(5px); color: var(--ink); }
+    nav a::after { display: none; }
+    footer { padding-left: 18px; padding-right: 18px; font-size: 9px; }
+  }
+  @media (max-height: 560px) and (max-width: 940px) {
+    main { padding: 32px 18px; }
+    nav { margin-top: 28px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; animation-delay: 0s !important; transition: none !important; }
+    .first, h1, .line, nav, footer { opacity: 1; }
+    #gl { display: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="gl" aria-hidden="true"></canvas>
+
+<main>
+  <p class="first">aurora</p>
+  <h1 id="aurora" aria-label="Aurora">AURORA</h1>
+  <p class="line">WebGL silk<span class="dot">·</span>wordmark demo</p>
+  <nav aria-label="Links">
+    <a href="#">Overview</a>
+    <a href="#">Gallery</a>
+    <a href="#">About</a>
+  </nav>
+</main>
+<footer>
+  <span>© 2026 Aurora</span>
+  <span>silk-wordmark demo</span>
+</footer>
+
+<script>
+(function () {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- AURORA variable-weight breath ---------- */
+  const h = document.getElementById('aurora');
+  const text = h.textContent; h.textContent = '';
+  const chars = [...text].map(c => {
+    const s = document.createElement('span');
+    s.className = 'ch'; s.textContent = c;
+    h.appendChild(s); return { el: s, w: 400, target: 400 };
+  });
+  const touch = matchMedia('(hover: none)').matches;
+  let mx = -1e4, my = -1e4, t0 = performance.now(), lastTouch = -1e9;
+
+  addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive: true });
+  addEventListener('mouseleave', () => { if (!touch) { mx = -1e4; my = -1e4; } });
+  // the finger is the cursor: track touches, stay "active" briefly after lift
+  let pulse = 0;
+  const onTouch = e => {
+    const p = e.touches[0];
+    if (p) { mx = p.clientX; my = p.clientY; lastTouch = performance.now(); }
+  };
+  addEventListener('touchstart', e => { onTouch(e); pulse = 1; }, { passive: true });
+  addEventListener('touchmove', onTouch, { passive: true });
+
+  const pointerActive = () =>
+    touch ? (performance.now() - lastTouch < 2500 && mx !== -1e4)
+          : mx !== -1e4;
+
+  if (!reduced) {
+    (function typeTick() {
+      const t = (performance.now() - t0) / 1000;
+      const active = pointerActive();
+      chars.forEach((c, i) => {
+        if (!active) {
+          c.target = 400 + 180 * Math.max(0, Math.sin(t * 0.9 - i * 0.55));
+        } else {
+          const r = c.el.getBoundingClientRect();
+          const d = Math.abs(mx - (r.left + r.width / 2));
+          const f = Math.max(0, 1 - d / 320);
+          c.target = 400 + 500 * f * f;
+        }
+        c.w += (c.target - c.w) * 0.12;
+        c.el.style.fontVariationSettings = `"wght" ${c.w.toFixed(1)}, "opsz" 144`;
+      });
+      requestAnimationFrame(typeTick);
+    })();
+  }
+
+  /* ---------- WebGL shader background ----------
+     Domain-warped fbm "black silk" + a soft cursor light.
+     Efficiency: renders at capped resolution (≤0.66 DPR, ≤1.2MP),
+     5-octave value-noise fbm only, pauses when tab hidden. */
+  const canvas = document.getElementById('gl');
+  if (reduced) return;
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
+  if (!gl) { canvas.style.display = 'none'; return; }
+
+  const VERT = 'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
+  const FRAG = `
+precision mediump float;
+uniform vec2 u_res;
+uniform float u_t;
+uniform vec2 u_mouse;   // smoothed, in pixels (shader-res space)
+uniform float u_mon;    // 1 when a real cursor is present
+
+float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+
+float noise(vec2 p){
+  vec2 i = floor(p), f = fract(p);
+  vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2(1.,0.)), u.x),
+             mix(hash(i + vec2(0.,1.)), hash(i + vec2(1.,1.)), u.x), u.y);
+}
+
+float fbm(vec2 p){
+  float v = 0.0, a = 0.5;
+  mat2 r = mat2(0.8, 0.6, -0.6, 0.8);
+  for (int i = 0; i < 5; i++) {
+    v += a * noise(p);
+    p = r * p * 2.05;
+    a *= 0.5;
+  }
+  return v;
+}
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res;
+  vec2 p = uv * vec2(u_res.x / u_res.y, 1.0) * 2.4;
+  float t = u_t * 0.05;
+
+  // domain-warped silk
+  vec2 q = vec2(fbm(p + t), fbm(p - t * 0.7 + 4.7));
+  vec2 r = vec2(fbm(p + 2.6 * q + vec2(1.7, 9.2) + t * 0.6),
+                fbm(p + 2.6 * q + vec2(8.3, 2.8) - t * 0.4));
+  float f = fbm(p + 2.2 * r);
+
+  // deep blue-black base, aurora silk folds barely lift it
+  vec3 col = vec3(0.010, 0.016, 0.020);
+  col += vec3(0.030, 0.060, 0.058) * smoothstep(0.25, 0.95, f);
+  col += vec3(0.045, 0.115, 0.090) * pow(smoothstep(0.55, 1.0, f * f * 1.6), 2.0) * 0.6;
+  // violet shimmer riding the brightest folds
+  col += vec3(0.060, 0.030, 0.110) * pow(smoothstep(0.62, 1.0, f * f * 1.6), 3.0) * 0.5;
+
+  // cursor light: soft cool aurora bloom that drags the silk
+  vec2 m = u_mouse / u_res;
+  m.x *= u_res.x / u_res.y;
+  vec2 pa = uv * vec2(u_res.x / u_res.y, 1.0);
+  float d = distance(pa, m);
+  float glow = exp(-d * d * 9.0) * u_mon;
+  col += vec3(0.060, 0.150, 0.140) * glow * (0.35 + 0.65 * f);
+  col += vec3(0.040, 0.035, 0.070) * exp(-d * d * 1.6) * u_mon;
+
+  // gentle vignette
+  float vig = smoothstep(1.25, 0.35, distance(uv, vec2(0.5)));
+  col *= 0.75 + 0.25 * vig;
+
+  // dither to kill banding on deep blacks
+  col += (hash(gl_FragCoord.xy) - 0.5) / 255.0;
+
+  gl_FragColor = vec4(col, 1.0);
+}`;
+
+  function compile(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src); gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+      console.warn(gl.getShaderInfoLog(s)); return null;
+    }
+    return s;
+  }
+  const vs = compile(gl.VERTEX_SHADER, VERT);
+  const fs = compile(gl.FRAGMENT_SHADER, FRAG);
+  if (!vs || !fs) { canvas.style.display = 'none'; return; }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, vs); gl.attachShader(prog, fs); gl.linkProgram(prog);
+  gl.useProgram(prog);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 3,-1, -1,3]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(prog, 'p');
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+  const uRes = gl.getUniformLocation(prog, 'u_res');
+  const uT = gl.getUniformLocation(prog, 'u_t');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+  const uMon = gl.getUniformLocation(prog, 'u_mon');
+
+  let scale = 1;
+  function resize() {
+    const dpr = Math.min(devicePixelRatio || 1, 1) * 0.66;
+    let w = Math.round(innerWidth * dpr), hpx = Math.round(innerHeight * dpr);
+    const mp = w * hpx;
+    if (mp > 1200000) { const k = Math.sqrt(1200000 / mp); w = Math.round(w * k); hpx = Math.round(hpx * k); }
+    canvas.width = w; canvas.height = hpx;
+    scale = w / innerWidth;
+    gl.viewport(0, 0, w, hpx);
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  let smx = innerWidth / 2, smy = innerHeight / 2, monT = 0;
+  let running = true;
+  document.addEventListener('visibilitychange', () => {
+    running = !document.hidden;
+    if (running) requestAnimationFrame(frame);
+  });
+
+  function frame() {
+    if (!running) return;
+    const t = (performance.now() - t0) / 1000;
+    const active = pointerActive();
+    let tx, ty;
+    if (active) {
+      tx = mx; ty = my;
+    } else if (touch) {
+      // no finger: the light tours the page — wordmark, identity line, CTAs
+      const WP = [[0.5, 0.36], [0.74, 0.52], [0.5, 0.64], [0.26, 0.52]];
+      const w = WP[Math.floor(t / 6) % WP.length];
+      tx = innerWidth  * (w[0] + 0.05 * Math.sin(t * 0.7));
+      ty = innerHeight * (w[1] + 0.04 * Math.sin(t * 0.53 + 1.3));
+    } else {
+      // nobody pointing: the light wanders the silk on its own
+      tx = innerWidth  * (0.5  + 0.34 * Math.sin(t * 0.21));
+      ty = innerHeight * (0.42 + 0.28 * Math.sin(t * 0.143 + 1.7));
+    }
+    pulse *= 0.965;
+    monT += ((active ? 1 : touch ? 0.68 : 0.55) - monT) * 0.04;
+    smx += (tx - smx) * (active ? 0.07 : 0.018);
+    smy += (ty - smy) * (active ? 0.07 : 0.018);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform1f(uT, t);
+    gl.uniform2f(uMouse, smx * scale, canvas.height - smy * scale);
+    gl.uniform1f(uMon, Math.min(1.6, monT + pulse * 0.9));
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
